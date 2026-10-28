@@ -1,0 +1,97 @@
+/* SideQuest theme: components inherit DaisyUI semantic tokens. */
+[data-theme="sidequest"], [data-theme="emerald"] {
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f2f6f3;
+  --color-base-300: #e1e9e4;
+  --color-base-content: #233b31;
+  --color-primary: #42bb8e;
+  --color-primary-content: #102e22;
+  --color-secondary: #20664d;
+  --color-secondary-content: #ffffff;
+  --color-accent: #dceee2;
+  --color-accent-content: #20664d;
+  --color-neutral: #233b31;
+  --color-neutral-content: #ffffff;
+  --color-info: #dceee2;
+  --color-info-content: #20664d;
+  --color-success: #20664d;
+  --color-success-content: #ffffff;
+  --color-warning: #94641e;
+  --color-warning-content: #ffffff;
+  --color-error: #ae4040;
+  --color-error-content: #ffffff;
+  --radius-selector: .65rem;
+  --radius-field: .8rem;
+  --radius-box: 1.25rem;
+  --size-selector: .25rem;
+  --size-field: .25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+* { scrollbar-width: thin; scrollbar-color: var(--color-base-300) transparent; }
+html, body { margin: 0; min-height: 100%; overscroll-behavior: none; }
+body { overflow: hidden; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 3px; }
+h1, h2, h3 { text-wrap: balance; }
+.brand-logo { width: 128px; height: 48px; object-fit: contain; }
+.app-shell { width: 100%; height: 100dvh; overflow: hidden; }
+.app-viewport { height: 100%; }
+.app-header { min-height: 80px; flex-shrink: 0; justify-content: space-between; padding: max(.65rem, env(safe-area-inset-top, 0px)) max(1.25rem, calc((100% - 1120px) / 2)) .65rem; border-bottom: 1px solid var(--color-base-300); gap: 1rem; }
+.app-header .brand-logo { width: 120px; }
+.screen-view { overscroll-behavior-y: contain; padding-inline: max(1.25rem, calc((100% - 1120px) / 2)); }
+.screen-view.hidden { display: none; }
+.home-intro h1 { font-size: 2.1rem; letter-spacing: -.06rem; }
+.welcome-card { position: relative; overflow: hidden; flex-shrink: 0; }
+.welcome-card .card-body { padding: 1.25rem; gap: .55rem; z-index: 1; }
+.welcome-card .badge { font-size: .65rem; }
+.welcome-card .card-title { font-size: 1.35rem; font-weight: 650; letter-spacing: -.035rem; line-height: 1.25; }
+.welcome-mark { position: absolute; right: -18px; top: 40px; width: 142px; height: 158px; mix-blend-mode: multiply; opacity: .19; transform: rotate(9deg); pointer-events: none; }
+.category-tile { display: flex; flex-direction: column; height: auto; min-height: 110px; gap: .3rem; padding: .9rem .3rem; border: 1px solid transparent; }
+@media (hover: hover) and (pointer: fine) {
+  .category-tile:hover { border-color: var(--color-primary); }
+}
+.category-icon { display: grid; place-items: center; height: 30px; font-size: 1.25rem; margin-bottom: .2rem; }
+.category-section > div:first-child { gap: .5rem; margin-bottom: .85rem; }
+.category-section > div:first-child > span { font-size: .7rem; font-weight: 500; white-space: nowrap; }
+.featured-pro { box-shadow: none; border-color: var(--color-base-300); }
+.card { flex-shrink: 0; }
+.card-title { font-weight: 650; }
+.app-navigation { flex-shrink: 0; padding: .5rem .65rem max(.5rem, env(safe-area-inset-bottom)); }
+.nav-btn { flex: 1; display: flex; flex-direction: column; gap: .35rem; min-height: 58px; height: auto; padding: .6rem .3rem; font-weight: 500; color: color-mix(in srgb, var(--color-base-content) 60%, transparent); }
+.nav-btn span { margin: 0; font-size: .65rem; font-weight: 500; }
+.nav-btn i { font-size: 1.1rem; }
+.nav-btn.nav-active { background: var(--color-accent); color: var(--color-secondary); }
+#form-create-os { display: flex; flex-direction: column; gap: .9rem; }
+#form-create-os .form-control { margin: 0; }
+#form-create-os > .grid { gap: .75rem; }
+#chat-input-field { min-width: 0; }
+#chat-messages-container { line-height: 1.65; }
+.chat-bubble { font-size: .875rem; }
+.modal-box { max-width: 390px; }
+.modal-box h3 { font-size: 1.15rem; }
+.modal-box .btn:not(.btn-circle) { white-space: normal; height: auto; min-height: 2.8rem; }
+#screen-provider-dashboard .text-lg { font-size: 1.7rem; letter-spacing: -.045rem; font-variant-numeric: tabular-nums; }
+#screen-provider-profile > .card:first-child { padding: 1.75rem 1rem; }
+#screen-provider-profile h2 { font-size: 1.25rem; }
+#screen-client-orders h2, #screen-provider-feed h2, #screen-provider-dashboard h2, #screen-client-create-os h2, #category-title { font-size: 1.2rem; letter-spacing: -.025rem; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.toast[hidden] { display: none; }
+#nav-container { max-width: 1120px; margin-inline: auto; }
+button, [role="button"] { -webkit-user-select: none; user-select: none; }
+@media (max-width: 520px) {
+  .app-header { min-height: 72px; }
+  .modal-box { width: calc(100% - 2rem); }
+}
+@media (pointer: coarse) {
+  .input, .select, .textarea { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}
+.nav-btn { position: relative; }

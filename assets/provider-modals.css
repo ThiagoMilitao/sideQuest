@@ -1,0 +1,55 @@
+/* Provider-only geometry, loaded after shared and legacy modal styles. */
+body[data-profile='provider'] dialog.modal {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: end;
+  justify-items: center;
+  overflow: hidden;
+}
+body[data-profile='provider'] dialog.modal > .modal-box,
+body[data-profile='provider'] #modal-budget > .modal-box {
+  grid-area: 1 / 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  max-height: calc(100% - max(1rem, env(safe-area-inset-top, 0px)));
+  margin: 0;
+  padding: 1.25rem;
+  padding-inline: max(1.25rem, env(safe-area-inset-left, 0px)) max(1.25rem, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  border-radius: 1.5rem 1.5rem 0 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  overflow-wrap: anywhere;
+  scrollbar-gutter: auto;
+}
+body[data-profile='provider'] .provider-sheet-handle { flex-shrink: 0; }
+body[data-profile='provider'] .modal-box :is(form, fieldset, .form-control) { min-width: 0; }
+body[data-profile='provider'] .modal-box :is(input:not([type='checkbox']):not([type='radio']), textarea, select) { min-width: 0; max-width: 100%; font-size: 1rem; }
+body[data-profile='provider'] .modal-box #budget-value { font-size: 1.8rem; }
+body[data-profile='provider'] .modal-box .btn { flex-shrink: 0; }
+body[data-profile='provider'] .provider-panel-actions { flex-direction: column; border-top: 1px solid var(--sq-line); padding-top: 1rem; }
+body[data-profile='provider'] .provider-panel-actions > .btn { width: 100%; border-radius: 1rem; }
+body[data-profile='provider'] .provider-radius-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+body[data-profile='provider'] #provider-radius-output { flex-shrink: 0; font-variant-numeric: tabular-nums; }
+@media (min-width: 640px) {
+  body[data-profile='provider'] dialog.modal { align-items: center; padding: 1.5rem; }
+  body[data-profile='provider'] dialog.modal > .modal-box,
+  body[data-profile='provider'] #modal-budget > .modal-box {
+    max-width: 32rem;
+    max-height: 100%;
+    border-radius: 1.5rem;
+  }
+  body[data-profile='provider'] .provider-panel-actions { flex-direction: row; }
+  body[data-profile='provider'] .provider-panel-actions > .btn { width: auto; }
+}

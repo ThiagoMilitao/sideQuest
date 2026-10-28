@@ -1,0 +1,147 @@
+/* SideQuest motion: compositor-friendly feedback, no layout animation. */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --sq-press-duration: 150ms;
+  --sq-panel-duration: 250ms;
+}
+.btn:is(button, a, summary), .category-compact, .professional-card {
+  transition: transform var(--sq-press-duration) var(--ease-out);
+}
+.btn:is(button, a, summary):is(:active, .sq-pressed):not(:disabled):not([aria-disabled='true']) {
+  transform: scale(.95);
+}
+.category-compact, .professional-card { position: relative; isolation: isolate; }
+.category-compact::after, .professional-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 6px 14px -6px #193b3140;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  z-index: -1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .category-compact, .professional-card { transition: transform 200ms var(--ease-out); }
+  .category-compact:hover, .professional-card:hover { transform: translateY(-4px); }
+  .category-compact:hover::after, .professional-card:hover::after { opacity: 1; }
+  .category-compact:is(:active, .sq-pressed), .professional-card:is(:active, .sq-pressed) { transform: translateY(-2px) scale(.98); }
+}
+@media (hover: none), (pointer: coarse) {
+  .btn.category-compact:is(button):is(:active, .sq-pressed):not(:disabled):not([aria-disabled='true']) { transform: translateY(-2px) scale(.95); }
+  .professional-card:is(:active, .sq-pressed) { transform: translateY(-2px) scale(.98); }
+  .professional-card:is(:active, .sq-pressed)::after, .category-compact:is(:active, .sq-pressed)::after { opacity: 1; }
+}
+/* Keep native showModal/close, Escape, focus trapping and focus restoration. */
+dialog.modal {
+  background: transparent !important;
+  transition: overlay var(--sq-panel-duration) allow-discrete,
+    visibility var(--sq-panel-duration) allow-discrete;
+}
+dialog.modal::backdrop {
+  display: block;
+  background: #193b3166;
+  opacity: 0;
+  transition: opacity var(--sq-panel-duration) var(--ease-out);
+}
+dialog.modal[open]::backdrop { opacity: 1; }
+dialog.modal > .modal-box {
+  scale: 1;
+  translate: 0;
+  transform: translateY(12%);
+  opacity: 0;
+  transition: transform var(--sq-panel-duration) var(--ease-drawer),
+    opacity var(--sq-panel-duration) var(--ease-out);
+}
+dialog.modal[open] > .modal-box { transform: translateY(0); opacity: 1; }
+@starting-style {
+  dialog.modal[open] > .modal-box { transform: translateY(12%); opacity: 0; }
+  dialog.modal[open]::backdrop { opacity: 0; }
+}
+/* A shadow is painted once; only its pseudo-element opacity changes. */
+.sq-message-new { animation: sq-message-in 300ms var(--ease-out) both; }
+@keyframes sq-message-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#modal-review .rating input {
+  transition: transform 150ms var(--ease-out), opacity 150ms ease;
+}
+#modal-review .rating input.sq-star-filled { opacity: 1; }
+#modal-review .rating input:not(.sq-star-filled) { opacity: .3; }
+#modal-review .rating input:checked { transform: scale(1.12); }
+#modal-review .rating input:focus-visible { outline: 3px solid #21664d; outline-offset: 4px; }
+.sq-success-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #21664d;
+  color: white;
+  font-size: 1.15rem;
+}
+.sq-loading-region { position: relative; min-width: 0; }
+.sq-loading-region > [data-sq-loading] { opacity: 0; }
+.sq-skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 1rem;
+}
+.sq-skeleton-card {
+  min-height: 190px;
+  padding: 1.15rem;
+  border: 1px solid var(--sq-line);
+  border-radius: 1rem;
+  background: var(--color-base-100);
+}
+.sq-skeleton-header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.sq-skeleton-avatar { width: 52px; height: 52px; border-radius: .85rem; flex-shrink: 0; }
+.sq-skeleton-lines { flex: 1; }
+.sq-skeleton-bar { height: 12px; border-radius: .3rem; margin-block: .75rem; }
+.sq-skeleton-bar:last-child { width: 65%; }
+.sq-skeleton-avatar, .sq-skeleton-bar, .sq-skeleton-symbol { background: #d7e3dc; }
+.sq-skeleton-card, .sq-skeleton-category { animation: sq-pulse 1.2s ease-in-out infinite; }
+.sq-skeleton-categories { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; }
+.sq-skeleton-category { display: grid; justify-items: center; align-content: center; min-height: 126px; border-radius: .85rem; background: var(--sq-paper); padding: .75rem; }
+.sq-skeleton-symbol { width: 40px; height: 40px; border-radius: .85rem; }
+.sq-skeleton-category .sq-skeleton-bar { width: 75%; }
+@keyframes sq-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+@media (min-width: 900px) { .sq-skeleton-categories { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .sq-skeleton-overlay:not(.sq-skeleton-categories) { grid-template-columns: 1fr; }
+  .sq-skeleton-category { min-height: 112px; }
+}
+/* The app's explicit preference has the same priority as the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  .btn:is(button, a, summary), .category-compact, .professional-card,
+  .category-compact::after, .professional-card::after, dialog.modal,
+  dialog.modal > .modal-box, dialog.modal::backdrop, #modal-review .rating input {
+    transition: none !important;
+  }
+  .btn:is(:active, .sq-pressed), .category-compact:hover, .category-compact:is(:active, .sq-pressed),
+  .professional-card:hover, .professional-card:is(:active, .sq-pressed),
+  dialog.modal > .modal-box, #modal-review .rating input:checked { transform: none !important; }
+  .sq-message-new, .sq-skeleton-card, .sq-skeleton-category { animation: none !important; }
+}
+html.account-reduced-motion .btn:is(:active, .sq-pressed),
+html.account-reduced-motion .category-compact:hover,
+html.account-reduced-motion .professional-card:hover,
+html.account-reduced-motion .professional-card:is(:active, .sq-pressed),
+html.account-reduced-motion dialog.modal > .modal-box,
+html.account-reduced-motion #modal-review .rating input:checked { transform: none !important; }
+html.account-reduced-motion .sq-message-new,
+html.account-reduced-motion .sq-skeleton-card,
+html.account-reduced-motion .sq-skeleton-category { animation: none !important; }
+
+html[data-sq-input='keyboard'] dialog.modal,
+html[data-sq-input='keyboard'] dialog.modal > .modal-box,
+html[data-sq-input='keyboard'] dialog.modal::backdrop { transition: none; }

@@ -1,0 +1,90 @@
+// Uses only Node built-ins and a running Chrome DevTools endpoint.
+// Start the local HTTP server on 8765 and Chrome with --remote-debugging-port=9222.
+import fs from 'node:fs/promises';
+const base = process.env.SIDEQUEST_URL || 'http://127.0.0.1:8765';
+const target = await fetch('http://127.0.0.1:9222/json/new?about:blank', {method:'PUT'}).then(r=>r.json());
+const ws = new WebSocket(target.webSocketDebuggerUrl);
+await new Promise(resolve=>ws.addEventListener('open',resolve,{once:true}));
+let sequence=0;const pending = new Map();const errors=[];let checks=0;
+ws.addEventListener('message',({data})=>{
+  const message=JSON.parse(data);
+  if(message.id){const request=pending.get(message.id);pending.delete(message.id);message.error?request.reject(message.error):request.resolve(message.result);}
+  if(message.method==='Runtime.exceptionThrown')errors.push(message.params.exceptionDetails.exception?.description || message.params.exceptionDetails.text);
+});
+const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});
+const evaluate=async expression=>{if(expression.includes('await '))expression='(async()=>{'+expression+'})()';const response=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(response.exceptionDetails)throw Error(response.exceptionDetails.exception?.description);return response.result.value;};
+const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const assert=async(expression,label)=>{if(!await evaluate(expression))throw Error('FAIL: '+label);checks++;console.log('PASS: '+label);};
+const viewport=async width=>send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<640});
+const navigate=async file=>{await send('Page.navigate',{url:base+'/'+file});await pause(1800);};
+const screenshot=async name=>{await pause(350);await fs.mkdir('/tmp/sidequest-provider',{recursive:true});const result=await send('Page.captureScreenshot',{format:'png'});await fs.writeFile('/tmp/sidequest-provider/'+name+'.png',Buffer.from(result.data,'base64'));};
+try {
+ const isolation=await send('Page.addScriptToEvaluateOnNewDocument',{source:"localStorage.removeItem('sidequest.subscription.v1.roberto');for(const key of Object.keys(localStorage)){if(key.startsWith('sidequest.proposal.v1.'))localStorage.removeItem(key);}"});
+ await send('Runtime.enable');await send('Page.enable');await send('Page.bringToFront');await viewport(390);
+ await navigate('SideQuestPrestador.html');
+ await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:isolation.identifier});
+ await assert(`document.documentElement.dataset.theme==='emerald' && !document.querySelector('.demo-banner') && !document.getElementById('app-mode-badge')`, 'prestador usa emerald sem marca Pro ou aviso no topo');
+ await assert(`document.querySelector('.provider-greeting').textContent==='Olá, Roberto 👋' && document.getElementById('provider-radius-label').textContent==='Santos • até 10 km'`, 'header mostra perfil e raio conforme referência');
+ await assert(`document.querySelectorAll('.provider-quick-stats .stat').length===3 && document.querySelector('.provider-income').textContent==='R$ 2.850,00' && document.querySelector('.provider-quick-stats').textContent.includes('42 avaliações')`, 'stats exibem ganhos, andamento e reputação');
+ await assert(`document.getElementById('provider-all-count').textContent==='2' && document.getElementById('provider-electric-count').textContent==='1' && document.getElementById('provider-new-count').textContent==='2'`, 'chips e badge mostram contagens iniciais corretas');
+ await screenshot('home-mobile');
+ await evaluate(`document.getElementById('provider-account-dropdown').open=true`);
+ await assert(`document.querySelectorAll('#provider-account-menu button').length===6`, 'dropdown contém os seis destinos atuais da conta');
+ await screenshot('menu-conta');
+ await evaluate(`document.querySelector('#provider-account-menu button').click()`);
+ await assert(`!document.getElementById('screen-provider-profile').classList.contains('hidden') && !document.getElementById('provider-account-dropdown').open`, 'item de perfil abre portfólio e fecha menu');
+ await evaluate(`navigateTo('screen-provider-feed');document.getElementById('provider-opportunity-search').value='gonzaga';document.getElementById('provider-opportunity-search').dispatchEvent(new Event('input'))`);
+ await assert(`!document.querySelector('[data-opportunity=mariana]').hidden && document.querySelector('[data-opportunity=carlos]').hidden`, 'busca por bairro filtra oportunidades');
+ await evaluate(`document.getElementById('provider-opportunity-search').value='hidraulica';document.getElementById('provider-opportunity-search').dispatchEvent(new Event('input'))`);
+ await assert(`document.querySelector('[data-opportunity=mariana]').hidden && !document.querySelector('[data-opportunity=carlos]').hidden`, 'busca ignora acentos na categoria');
+ await evaluate(`filterOpportunities('electric')`);
+ await assert(`!document.getElementById('opportunity-empty').hidden`, 'busca e filtro podem produzir estado vazio com recuperação');
+ await screenshot('busca-sem-chamados');
+ await evaluate(`SideQuestProvider.resetFilters();filterOpportunities('urgent')`);
+ await assert(`!document.querySelector('[data-opportunity=mariana]').hidden && document.querySelector('[data-opportunity=carlos]').hidden && document.querySelector('[data-filter=urgent]').getAttribute('aria-pressed')==='true'`, 'chip de urgência filtra e indica seleção');
+ await evaluate(`filterOpportunities('electric');filterOpportunities('nearby')`);
+ await assert(`document.querySelector('[data-filter=urgent]').getAttribute('aria-pressed')==='true' && document.querySelector('[data-filter=electric]').getAttribute('aria-pressed')==='true' && document.getElementById('opportunity-summary').textContent.includes('5 km')`, 'categoria, urgência e distância combinam sem perder estado');
+ await evaluate(`filterOpportunities('all');document.querySelector('[data-opportunity=carlos]').dataset.distance='8';filterOpportunities('nearby')`);
+ await assert(`document.querySelector('[data-opportunity=carlos]').hidden && !document.querySelector('[data-opportunity=mariana]').hidden`, 'Até 5 km exclui chamados fora do limite');
+ await evaluate(`document.querySelector('[data-opportunity=carlos]').dataset.distance='2.8';filterOpportunities('all');openProviderPanel('radius')`);
+ await assert(`document.getElementById('modal-provider-radius').open`, 'pílula e menu abrem controle de raio');
+ await pause(300);
+ await evaluate(`document.getElementById('provider-base-city').value='';document.getElementById('provider-radius-form').requestSubmit()`);
+ await assert(`!document.getElementById('provider-radius-error').hidden && document.activeElement.id==='provider-base-city'`, 'raio exige cidade e indica campo inválido');
+ await evaluate(`document.getElementById('provider-base-city').value='Santos';document.getElementById('provider-radius-range').value='1';document.getElementById('provider-radius-form').requestSubmit()`);
+ await assert(`document.getElementById('provider-radius-label').textContent==='Santos • até 1 km' && !document.getElementById('opportunity-empty').hidden`, 'raio escolhido atualiza pílula e lista');
+ await evaluate(`openProviderPanel('radius');document.getElementById('provider-radius-range').value='10';document.getElementById('provider-radius-form').requestSubmit();openProviderPanel('radius');document.getElementById('provider-base-city').value='Outra cidade';document.getElementById('provider-radius-form').requestSubmit()`);
+ await assert(`!document.getElementById('opportunity-empty').hidden && document.getElementById('provider-empty-hint').textContent.includes('cidade')`, 'outra cidade não reutiliza distâncias de Santos');
+ await evaluate(`openProviderPanel('radius');document.getElementById('provider-base-city').value='Santos';document.getElementById('provider-radius-form').requestSubmit();openProviderPanel('services')`);
+ await evaluate(`document.querySelectorAll('#provider-service-options input').forEach(input=>input.checked=false);document.getElementById('provider-services-form').requestSubmit()`);
+ await assert(`!document.getElementById('provider-services-error').hidden`, 'serviços exigem ao menos uma categoria');
+ await evaluate(`document.querySelector('#provider-service-options input[value=electric]').checked=true;document.querySelector('#provider-service-options input[value=repairs]').checked=true;document.getElementById('provider-services-form').requestSubmit();openProviderPanel('services')`);
+ await assert(`document.querySelectorAll('#provider-service-options input:checked').length===2 && document.getElementById('provider-profile-services').textContent.includes('Montagem')`, 'categorias salvas refletem no perfil e na reabertura');
+ await evaluate(`document.getElementById('modal-provider-services').close();openPlansModal()`);
+ await assert(`document.getElementById('modal-provider-plans').open && document.getElementById('provider-plan-badge').textContent==='Pro Ouro'`, 'menu abre planos com Ouro ativo');
+ await assert(`document.querySelectorAll('.plan-card').length===3 && !document.getElementById('modal-provider-pix')`, 'planos substituem o antigo cadastro financeiro');
+ await evaluate(`document.getElementById('modal-provider-plans').close();openProviderPanel('settings');document.getElementById('provider-reduced-motion').checked=true;document.getElementById('provider-settings-form').requestSubmit()`);
+ await assert(`SideQuestMotion.reduced() && document.documentElement.classList.contains('account-reduced-motion')`, 'configuração aplica redução de movimento');
+ await evaluate(`openProviderPanel('settings');document.getElementById('provider-reduced-motion').checked=false;document.getElementById('provider-settings-form').requestSubmit();document.getElementById('app-feedback').hidden=true;navigateTo('screen-provider-feed');openSendBudgetModal('Mariana Silva')`);
+ await assert(`document.getElementById('modal-budget').open && document.getElementById('provider-new-count').textContent==='1'`, 'Enviar Proposta abre orçamento e atualiza novas oportunidades');
+ await evaluate(`document.getElementById('budget-value').value='190';document.getElementById('budget-schedule').value='Amanhã às 10h';document.getElementById('budget-duration').value='2h';document.getElementById('budget-notes').value='Instalação e testes';await confirmSendBudget()`);
+ await assert(`clients.mariana.proposal.total===190 && currentClient==='mariana'`, 'fluxo existente de proposta mantém valor e cliente');
+ await evaluate(`document.getElementById('app-feedback').hidden=true;navigateTo('screen-provider-dashboard')`);await pause(300);
+ await assert(`document.getElementById('screen-provider-dashboard').textContent.includes('R$ 2.850,00') && chartInstance.data.datasets[0].data.at(-1)===2850`, 'Home e ganhos usam o mesmo total mensal');
+ await evaluate(`navigateTo('screen-provider-feed');document.getElementById('provider-account-trigger').focus()`);
+ await send('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowDown',code:'ArrowDown'});
+ await assert(`document.getElementById('provider-account-dropdown').open && document.getElementById('provider-account-menu').contains(document.activeElement)`, 'setas do teclado abrem e percorrem menu');
+ await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+ await assert(`!document.getElementById('provider-account-dropdown').open && document.activeElement.id==='provider-account-trigger'`, 'Escape fecha menu e restaura foco');
+ for(const width of [320,390,768,1280]) {
+   await viewport(width);await pause(150);
+   await assert(`document.documentElement.scrollWidth<=innerWidth && document.getElementById('screen-provider-feed').scrollWidth<=document.getElementById('screen-provider-feed').clientWidth && document.querySelector('.provider-quick-stats').scrollWidth<=document.querySelector('.provider-quick-stats').clientWidth`, 'Home e stats sem rolagem horizontal em '+width+'px');
+ }
+ await screenshot('home-desktop');
+ await evaluate(`switchRole('client')`);await pause(2000);
+ await assert(`location.pathname.endsWith('SideQuestPrototipo.html') && !document.getElementById('screen-client-home').classList.contains('hidden') && document.getElementById('account-greeting').textContent.includes('Mariana')`, 'Modo Cliente abre visão da Mariana');
+ await navigate('SideQuestPrestador.html');await evaluate(`logoutProvider()`);await pause(2000);
+ await assert(`location.pathname.endsWith('SideQuestPrototipo.html') && !document.getElementById('screen-auth').classList.contains('hidden') && !sessionStorage.getItem('sidequest-demo-session')`, 'Sair da Conta retorna ao login e limpa acesso demonstrativo');
+ if(errors.length)throw Error(errors.join('\n'));
+ console.log(`${checks} provider checks passed. No uncaught browser errors. Screenshots: /tmp/sidequest-provider`);
+} finally {ws.close();}

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html data-theme="emerald" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" name="viewport"/>
+<title>SideQuest — Prestador</title>
+<!-- FontAwesome Icons -->
+<link href="assets/vendor/fontawesome/css/all.min.css" rel="stylesheet"/>
+<!-- Chart.js for Financial Dashboard -->
+<script src="assets/vendor/chart.umd.min.js"></script>
+<link href="assets/vendor/daisyui.css" rel="stylesheet"/>
+<script src="assets/vendor/tailwind-browser.js"></script>
+<link href="assets/sidequest.css" rel="stylesheet"/>
+<link href="assets/redesign.css" rel="stylesheet"/>
+<link href="assets/motion.css" rel="stylesheet"/>
+<link href="assets/provider-home.css" rel="stylesheet"/>
+<link href="assets/proposals.css" rel="stylesheet"/>
+<link href="assets/provider-modals.css" rel="stylesheet"/>
+<link href="assets/provider-chat.css" rel="stylesheet"/>
+<link href="assets/provider-finance.css" rel="stylesheet"/>
+<link href="assets/provider-profile.css" rel="stylesheet"/>
+<link href="assets/provider-plans.css" rel="stylesheet"/>
+<link href="Images/sidequest-icon.svg" rel="icon" type="image/svg+xml"/>
+<meta content="Encontre profissionais próximos, solicite serviços e acompanhe cada cuidado com a sua casa no SideQuest." name="description"/>
+<meta content="#ffffff" name="theme-color"/></head>
+<body class="bg-base-100 text-base-content" data-profile="provider">
+<a class="skip-link" href="#app-viewport">Pular para o conteúdo</a>
+
+
+<div class="app-shell bg-base-100">
+<!-- APP SCREEN CONTAINER -->
+<main class="app-viewport flex flex-col relative overflow-hidden bg-base-100" id="app-viewport" tabindex="-1">
+<!-- APP HEADER -->
+<header class="navbar app-header bg-base-100 provider-header">
+<details class="dropdown dropdown-bottom dropdown-start provider-account-dropdown" id="provider-account-dropdown">
+<summary class="btn btn-ghost provider-account-trigger" id="provider-account-trigger" aria-label="Abrir conta de Roberto Alves" aria-controls="provider-account-menu" aria-expanded="false"><span class="avatar"><span class="provider-header-avatar"><img alt="Roberto Alves" id="user-avatar" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&amp;auto=format&amp;fit=crop&amp;q=80" width="40" height="40"/></span></span><span class="provider-greeting">Olá, Roberto 👋</span><i class="fa-solid fa-chevron-down provider-chevron" aria-hidden="true"></i></summary>
+<ul class="dropdown-content menu rounded-2xl shadow-xl bg-base-100 border border-base-200 p-2 provider-account-menu" id="provider-account-menu" aria-label="Conta profissional">
+<li class="menu-title">Conta profissional</li>
+<li><button type="button" onclick="navigateTo('screen-provider-profile')"><i class="fa-solid fa-user-gear" aria-hidden="true"></i>Meu Perfil &amp; Portfólio</button></li>
+<li><button type="button" onclick="openProviderPanel('services')"><i class="fa-solid fa-list-check" aria-hidden="true"></i>Meus Serviços &amp; Categorias</button></li>
+<li><button type="button" id="provider-plans-trigger" onclick="openPlansModal()"><i class="fa-solid fa-crown text-warning" aria-hidden="true"></i>Meu Plano / Assinatura <span class="badge badge-warning badge-xs font-bold" id="provider-plan-badge">Pro Ouro</span></button></li>
+<li><button type="button" onclick="openProviderPanel('radius')"><i class="fa-solid fa-compass" aria-hidden="true"></i>Raio de Atendimento</button></li>
+<li><button type="button" onclick="openProviderPanel('settings')"><i class="fa-solid fa-gear" aria-hidden="true"></i>Configurações</button></li>
+<li role="presentation" aria-hidden="true"><div class="divider my-1"></div></li>
+<li><button type="button" class="text-error" onclick="logoutProvider()"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>Sair da Conta</button></li>
+</ul></details>
+<button type="button" class="btn btn-ghost provider-radius-pill" id="provider-radius-trigger" aria-haspopup="dialog" aria-controls="modal-provider-radius" onclick="openProviderPanel('radius')"><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i><span id="provider-radius-label">Santos • até 10 km</span><i class="fa-solid fa-chevron-down provider-chevron" aria-hidden="true"></i></button>
+</header>
+<!-- ========================================== -->
+
+<!-- ========================================== -->
+<!-- SCREEN 1: CLIENT - HOME DASHBOARD (CATEGORIES & FEATURED) -->
+
+<!-- SCREEN 1.5: CLIENT - NEARBY PROFESSIONALS LIST (AFTER CATEGORY CLICK) -->
+
+<!-- SCREEN 2: CLIENT - CREATE ORDER / O.S. -->
+
+<!-- Provider messages: conversation list and individual chat. -->
+<section class="screen-view hidden flex-1 min-h-0 overflow-y-auto bg-base-100 provider-message-list" id="screen-provider-messages">
+  <header class="provider-messages-heading"><h1>Mensagens</h1><span id="provider-messages-unread" class="badge badge-primary" role="status"></span></header>
+  <p class="provider-messages-intro">Converse com seus clientes e acompanhe os orçamentos.</p>
+  <ul id="provider-recent-conversations" aria-label="Conversas recentes"></ul>
+</section>
+<section class="screen-view hidden flex-1 flex flex-col min-h-0 bg-base-100" id="screen-client-chat">
+  <header class="provider-chat-header" aria-label="Conversa com a cliente">
+    <button type="button" class="btn btn-ghost provider-chat-profile" id="provider-chat-profile" onclick="openClientDetails()" aria-haspopup="dialog" aria-controls="modal-client-details">
+      <span class="provider-client-avatar"><img id="chat-interlocutor-img" alt="" width="44" height="44"/><span id="chat-interlocutor-initials" hidden aria-hidden="true"></span></span>
+      <span class="provider-chat-identity"><span id="chat-interlocutor-name" class="provider-chat-name"></span><span id="chat-interlocutor-location" class="provider-chat-location"></span><span class="provider-chat-online"><span aria-hidden="true">●</span> Online agora</span></span>
+    </button>
+    <button type="button" class="btn btn-ghost btn-circle" aria-label="Fechar conversa e voltar para Mensagens" onclick="showChatList()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+  </header>
+  <div class="provider-chat-thread" id="chat-messages-container" role="log" aria-label="Mensagens desta conversa" aria-live="polite"></div>
+  <p class="sr-only" id="provider-chat-status" role="status"></p>
+  <form onsubmit="event.preventDefault();sendChatMessage()" class="provider-chat-composer bg-base-100 border-t border-base-300">
+    <button type="button" aria-label="Anexar imagem JPG, PNG ou WebP de até 10 MB" class="btn btn-ghost btn-circle" onclick="document.getElementById('chat-attachment').click()"><i aria-hidden="true" class="fa-solid fa-paperclip"></i></button>
+    <input accept="image/jpeg,image/png,image/webp" aria-label="Anexar imagem à conversa" class="hidden" id="chat-attachment" type="file"/>
+    <input aria-label="Sua mensagem" autocomplete="off" class="input input-bordered bg-base-200 rounded-full" enterkeyhint="send" maxlength="2000" id="chat-input-field" placeholder="Digite sua mensagem..." type="text"/>
+    <button id="provider-chat-send" disabled type="submit" aria-label="Enviar mensagem" class="btn btn-primary btn-circle"><i aria-hidden="true" class="fa-solid fa-paper-plane"></i></button>
+  </form>
+</section>
+<!-- SCREEN 4: CLIENT - O.S. LIFECYCLE MANAGEMENT & REVIEWS -->
+
+<!-- ========================================== -->
+
+<!-- ========================================== -->
+<!-- SCREEN 5: PROVIDER - OPPORTUNITIES FEED -->
+<section class="screen-view provider-home flex-1 flex flex-col min-h-0 overflow-y-auto bg-base-100" id="screen-provider-feed" aria-label="Oportunidades de serviço">
+<section class="stats provider-quick-stats" aria-label="Seu desempenho no mês">
+<div class="stat"><div class="stat-title">Serviços no Mês</div><div class="stat-value provider-income">R$ 2.850,00</div><div class="stat-desc provider-positive"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i> +18% no mês</div></div>
+<div class="stat"><div class="stat-title">Em Andamento</div><div class="stat-value">2 <span>O.S.</span></div><div class="stat-desc">Serviços ativos</div></div>
+<div class="stat"><div class="stat-title">Reputação</div><div class="stat-value"><i class="fa-solid fa-star" aria-hidden="true"></i> 4.9</div><div class="stat-desc">42 avaliações</div></div>
+</section>
+<div class="provider-feed-heading"><h1>Oportunidades</h1><p>Encontre chamados na sua região.</p><p id="provider-priority-notice" class="text-xs text-secondary">Pro Ouro · Alertas prioritários de novas O.S. na região (demonstração).</p></div>
+<form class="provider-search-form" id="provider-search-form" role="search"><label class="input input-bordered provider-search-field"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" id="provider-opportunity-search" aria-label="Buscar chamados ou bairros" placeholder="Buscar chamados ou bairros..." autocomplete="off" maxlength="120" enterkeyhint="search"/><button type="button" class="btn btn-ghost btn-square" id="provider-clear-search" aria-label="Limpar busca de chamados" onclick="SideQuestProvider.clearSearch()" hidden><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></label></form>
+<div class="provider-filters" role="group" aria-label="Filtrar oportunidades">
+<button type="button" class="btn btn-outline btn-sm" data-filter="all" aria-pressed="true" onclick="filterOpportunities('all')">Todas (<span id="provider-all-count">2</span>)</button>
+<button type="button" class="btn btn-outline btn-sm" data-filter="electric" aria-pressed="false" onclick="filterOpportunities('electric')">Elétrica (<span id="provider-electric-count">1</span>)</button>
+<button type="button" class="btn btn-outline btn-sm" data-filter="urgent" aria-pressed="false" onclick="filterOpportunities('urgent')">Urgentes <i class="fa-solid fa-bolt" aria-hidden="true"></i></button>
+<button type="button" class="btn btn-outline btn-sm" data-filter="nearby" aria-pressed="false" onclick="filterOpportunities('nearby')">Até 5 km</button>
+</div>
+<p id="opportunity-summary" class="result-summary" role="status">2 chamados disponíveis em Santos • até 10 km.</p>
+<div class="empty-state" id="opportunity-empty" hidden><h2>Nenhum chamado encontrado</h2><p id="provider-empty-hint">Tente outro serviço ou bairro, remova os filtros ou ajuste seu raio de atendimento.</p><div class="provider-empty-actions"><button class="btn btn-outline" type="button" onclick="SideQuestProvider.resetFilters()">Limpar busca e filtros</button><button class="btn btn-ghost" type="button" onclick="openProviderPanel('radius')">Ajustar raio</button></div></div>
+<div class="provider-opportunity-grid">
+<article data-opportunity="mariana" data-category="electric" data-urgent="true" data-distance="1.2" data-city="Santos" data-district="Gonzaga" data-new="true" class="card bg-base-100 rounded-2xl border border-base-200 provider-opportunity-card" aria-labelledby="opportunity-mariana-title">
+<div class="provider-opportunity-tags"><span class="badge badge-soft badge-primary"><i class="fa-solid fa-bolt" aria-hidden="true"></i>Elétrica</span><span class="badge provider-deadline">Prazo: Hoje</span></div>
+<p class="provider-opportunity-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Gonzaga • 1.2 km</p>
+<h2 id="opportunity-mariana-title">Instalação de Chuveiro 7500W e Reparo de Tomadas</h2>
+<p class="provider-opportunity-description">Cliente Mariana necessita de troca urgente de chuveiro elétrico e revisão na caixa de disjuntores.</p>
+<footer class="provider-opportunity-footer"><span>Publicado há 15 min</span><button class="btn btn-primary btn-sm rounded-xl" type="button" onclick="openSendBudgetModal('Mariana Silva')">Enviar Proposta <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></footer>
+</article>
+<article data-opportunity="carlos" data-category="water" data-urgent="false" data-distance="2.8" data-city="Santos" data-district="Boqueirão" data-new="true" class="card bg-base-100 rounded-2xl border border-base-200 provider-opportunity-card" aria-labelledby="opportunity-carlos-title">
+<div class="provider-opportunity-tags"><span class="badge badge-soft badge-primary"><i class="fa-solid fa-faucet-drip" aria-hidden="true"></i>Hidráulica</span><span class="badge provider-deadline provider-deadline-flexible">Prazo: Esta semana</span></div>
+<p class="provider-opportunity-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Boqueirão • 2.8 km</p>
+<h2 id="opportunity-carlos-title">Vazamento em Torneira de Cozinha</h2>
+<p class="provider-opportunity-description">Cliente Carlos precisa de reparo em uma torneira gourmet com vazamento na base ou troca do reparo vedante.</p>
+<footer class="provider-opportunity-footer"><span>Publicado há 1 hora</span><button class="btn btn-primary btn-sm rounded-xl" type="button" onclick="openSendBudgetModal('Carlos Eduardo')">Enviar Proposta <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></footer>
+</article>
+</div>
+</section>
+<!-- SCREEN 6: PROVIDER - FINANCIAL DASHBOARD -->
+<section class="screen-view hidden flex-1 flex flex-col min-h-0 overflow-y-auto bg-base-100 finance-screen" id="screen-provider-dashboard">
+<header class="finance-heading"><div><p class="finance-eyebrow" id="finance-month"></p><h1>Gestão de Serviços</h1></div><span class="badge badge-soft">Demonstração</span></header>
+<p class="finance-intro">Acompanhe os valores combinados dos seus serviços e planeje o próximo passo.</p><p class="direct-payment-note">O SideQuest não cobra taxa sobre seus serviços. Todo o pagamento é negociado e recebido diretamente por você com o cliente.</p>
+<div class="finance-overview">
+<article class="card bg-primary text-primary-content p-4 rounded-2xl shadow-lg finance-balance"><p>Serviços concluídos no mês</p><strong id="finance-total">R$ 2.850,00</strong><p class="finance-key">100% do valor negociado fica com você.</p><button type="button" class="btn btn-accent rounded-xl" onclick="openPlansModal()"><i class="fa-solid fa-crown" aria-hidden="true"></i> Meu Plano / Assinatura</button></article>
+<article class="card finance-goal"><div class="finance-section-heading"><h2>Meta mensal</h2><button type="button" class="btn btn-ghost btn-sm" onclick="SideQuestFinance.openGoal()" aria-label="Editar meta mensal"><i class="fa-solid fa-pen" aria-hidden="true"></i> Editar</button></div><p id="finance-goal-copy"></p><progress class="progress progress-primary w-full" id="finance-goal-progress" max="100" value="81" aria-label="Progresso da meta de serviços"></progress><p id="finance-goal-remaining" class="finance-muted"></p><p class="finance-projection" id="finance-projection"></p><p class="finance-muted">Projeção dos valores de serviços pelo ritmo diário; não confirma recebimentos.</p></article>
+</div>
+<div class="finance-metrics"><article><h2>Em andamento</h2><strong id="finance-receivable"></strong><p>Valores combinados</p></article><article><h2>Concluídos no mês</h2><strong id="finance-net"></strong><p class="finance-positive" id="finance-growth"></p></article><article><h2>Ticket médio</h2><strong id="finance-ticket"></strong><p id="finance-completed"></p></article></div>
+<button type="button" class="btn btn-outline finance-export" onclick="document.getElementById('modal-finance-report').showModal()"><i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i> Baixar Relatório do Mês (PDF/CSV)</button>
+<article class="card finance-chart-card"><div class="finance-section-heading"><h2>Evolução dos serviços</h2><span class="finance-muted">Valor combinado</span></div><div class="finance-segments" role="group" aria-label="Período do gráfico"><button type="button" class="btn btn-sm" data-finance-period="month" aria-pressed="true">Este Mês</button><button type="button" class="btn btn-sm" data-finance-period="quarter" aria-pressed="false">Últimos 3 Meses</button><button type="button" class="btn btn-sm" data-finance-period="year" aria-pressed="false">Ano</button></div><div class="finance-chart"><canvas id="financeChart" role="img" aria-label="Evolução dos valores combinados dos serviços"></canvas></div><p id="finance-chart-summary" class="finance-muted" aria-live="polite"></p><details class="finance-chart-data"><summary>Ver valores do gráfico</summary><ul id="finance-chart-values"></ul></details></article>
+<section class="finance-statement" aria-labelledby="finance-statement-title"><div class="finance-section-heading"><h2 id="finance-statement-title">Histórico de Serviços</h2><span class="finance-muted" id="finance-transaction-count" aria-live="polite"></span></div><div class="finance-segments" role="group" aria-label="Filtrar extrato"><button type="button" class="btn btn-sm" data-finance-filter="all" aria-pressed="true">Todas</button><button type="button" class="btn btn-sm" data-finance-filter="completed" aria-pressed="false">Concluídos</button><button type="button" class="btn btn-sm" data-finance-filter="ongoing" aria-pressed="false">Em andamento</button></div><div id="finance-transactions"></div></section>
+<p class="finance-demo-note">Valores combinados ilustrativos, sem confirmação de recebimento. O pagamento é feito diretamente entre cliente e profissional.</p>
+</section>
+<!-- SCREEN 7: PROVIDER - PROFILE & PORTFOLIO -->
+<section class="screen-view hidden flex-1 flex flex-col min-h-0 overflow-y-auto bg-base-100 provider-profile-screen" id="screen-provider-profile">
+<article class="card rounded-2xl border border-base-200 p-4 shadow-xs bg-base-100 provider-profile-card">
+  <div class="provider-profile-portrait"><img id="provider-profile-img" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=180&amp;auto=format&amp;fit=crop&amp;q=85" alt="Roberto Alves" width="88" height="88"/><span class="provider-verified-seal" role="img" aria-label="Perfil verificado"><i class="fa-solid fa-circle-check text-success" aria-hidden="true"></i></span></div>
+  <h1>Roberto Alves</h1><p id="provider-profile-title">Eletricista Residencial e Comercial</p>
+  <span class="badge badge-warning" id="provider-pro-verified"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Verificado Pro</span><div class="provider-trust-badges"><span class="badge badge-soft badge-primary"><i class="fa-solid fa-bolt" aria-hidden="true"></i> NR-10 Certificado</span><span class="badge badge-soft badge-success"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Verificado pela Plataforma</span></div>
+  <dl class="provider-profile-metrics"><div><dt>Nota</dt><dd>4.9 <span class="provider-rating-star" aria-label="estrelas">★</span></dd></div><div><dt>Serviços realizados</dt><dd>142 <span>O.S.</span></dd></div><div><dt>Experiência</dt><dd>5 <span>anos</span></dd></div></dl>
+</article>
+<section class="provider-profile-about" aria-labelledby="provider-about-title"><h2 id="provider-about-title">Sobre e Especialidades</h2><p id="provider-profile-bio">Profissional especializado em instalações elétricas residenciais, manutenções preventivas, montagem de quadros de disjuntores e iluminação LED.</p><div class="provider-specialties"><span class="badge badge-outline">Instalação de Chuveiros</span><span class="badge badge-outline">Quadros Elétricos</span><span class="badge badge-outline">Iluminação</span><span class="badge badge-outline">Reparo de Tomadas</span></div><p class="provider-service-summary">Categorias atendidas: <span id="provider-profile-services">Elétrica</span></p></section>
+<section class="provider-portfolio-section" aria-labelledby="provider-portfolio-title"><header class="provider-profile-section-heading"><h2 id="provider-portfolio-title">Portfólio de Trabalhos</h2><button type="button" class="btn btn-outline btn-xs rounded-xl" id="portfolio-add" onclick="openPortfolioUpload()"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar Foto</button></header><p class="provider-profile-hint">Toque em uma foto para ver o trabalho. <span id="portfolio-count">3 fotos · ilimitadas no Pro Ouro</span>.</p>
+<div class="grid grid-cols-3" id="portfolio-grid">
+<figure class="portfolio-item"><button type="button" class="portfolio-photo" onclick="openPortfolioWork(this)" aria-label="Ver trabalho: Montagem de Quadro Elétrico"><img src="assets/portfolio/quadro-eletrico.jpg" alt="Serviço em quadro elétrico com disjuntores e fiação" width="700" height="933" loading="lazy"/><span class="portfolio-caption">Montagem de Quadro Elétrico</span></button></figure>
+<figure class="portfolio-item"><button type="button" class="portfolio-photo" onclick="openPortfolioWork(this)" aria-label="Ver trabalho: Instalação de Comando Elétrico"><img src="assets/portfolio/comando-eletrico.jpg" alt="Eletricista trabalhando na instalação de um comando elétrico" width="700" height="467" loading="lazy"/><span class="portfolio-caption">Instalação de Comando Elétrico</span></button></figure>
+<figure class="portfolio-item"><button type="button" class="portfolio-photo" onclick="openPortfolioWork(this)" aria-label="Ver trabalho: Revisão de Conexões Elétricas"><img src="assets/portfolio/conexoes-eletricas.jpg" alt="Revisão de conexões elétricas com ferramentas" width="700" height="467" loading="lazy"/><span class="portfolio-caption">Revisão de Conexões Elétricas</span></button></figure>
+</div></section>
+<section class="provider-profile-reviews" aria-labelledby="provider-reviews-title"><h2 id="provider-reviews-title">Avaliações Recentes <span>(4.9 ★)</span></h2><article class="provider-review"><header><span class="provider-review-avatar" aria-hidden="true">MS</span><div><h3>Mariana S.</h3><span class="provider-review-stars" aria-label="5 de 5 estrelas">★★★★★ <span>5.0</span></span></div></header><p>Excelente profissional, muito rápido na troca do chuveiro e atencioso.</p></article><article class="provider-review"><header><span class="provider-review-avatar" aria-hidden="true">FA</span><div><h3>Fernando A.</h3><span class="provider-review-stars" aria-label="5 de 5 estrelas">★★★★★ <span>5.0</span></span></div></header><p>Resolveu um curto na fiação que outros não acharam. Recomendo!</p></article></section>
+<p class="provider-profile-hint">Perfil, selos, fotos iniciais e avaliações ilustrativos. Fotos publicadas ficam nesta sessão.</p>
+</section>
+<!-- ========================================== -->
+<!-- BOTTOM NAVIGATION BAR (Dynamic) -->
+<!-- ========================================== -->
+<nav aria-label="Navegação principal do prestador" class="app-navigation bg-base-100 border-t border-base-300">
+<!-- CLIENT NAV TEMPLATE -->
+
+<!-- PROVIDER NAV TEMPLATE -->
+<template id="provider-nav-template">
+<button class="btn btn-ghost nav-btn" onclick="navigateTo('screen-provider-feed')">
+<span class="provider-nav-symbol"><i aria-hidden="true" class="fa-solid fa-briefcase text-base"></i><span class="badge badge-primary provider-new-badge" id="provider-new-count" aria-label="2 novas oportunidades">2</span></span>
+<span class="text-xs font-bold mt-0.5">Oportunidades</span>
+</button>
+<button class="btn btn-ghost nav-btn" onclick="showChatList()" data-screen="screen-provider-messages" aria-label="Mensagens">
+<i aria-hidden="true" class="fa-regular fa-comment-dots text-base"></i>
+<span class="text-xs font-bold mt-0.5">Mensagens</span>
+</button>
+<button class="btn btn-ghost nav-btn" onclick="navigateTo('screen-provider-dashboard')">
+<i aria-hidden="true" class="fa-solid fa-chart-line text-base"></i>
+<span class="text-xs font-bold mt-0.5">Ganhos</span>
+</button>
+<button class="btn btn-ghost nav-btn" onclick="navigateTo('screen-provider-profile')">
+<i aria-hidden="true" class="fa-solid fa-user-gear text-base"></i>
+<span class="text-xs font-bold mt-0.5">Perfil</span>
+</button>
+</template>
+<div class="w-full flex justify-around items-center" id="nav-container">
+<!-- Nav items injected via JavaScript -->
+</div>
+</nav>
+</main>
+</div>
+<!-- ========================================== -->
+<!-- INTERACTIVE MODALS -->
+<!-- ========================================== -->
+<!-- REVIEW & RATING MODAL (CLIENT) -->
+
+<dialog id="modal-provider-plans" class="modal modal-bottom sm:modal-middle" aria-labelledby="plans-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100"><div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><header class="provider-panel-header"><div><p class="plans-eyebrow">SideQuest Pro</p><h2 id="plans-title">Planos &amp; Destaque Profissional</h2></div><button type="button" class="btn btn-ghost btn-circle" aria-label="Fechar planos" onclick="this.closest('dialog').close()">✕</button></header>
+<section class="plans-current bg-primary text-primary-content rounded-2xl"><span class="badge badge-success">Ativo</span><h3 id="plans-current-title">Você está no Plano Pro Ouro</h3><p id="plans-current-until">Ativo até 15/11/2026</p><button type="button" class="btn btn-sm" id="plans-manage-open" onclick="SideQuestPlanUI.manage()">Gerenciar assinatura</button></section>
+<p class="plans-demo">Demonstração de assinatura: as mudanças são locais, sem cobrança. O cliente paga pelo serviço diretamente a você.</p>
+<div class="plans-comparison" id="plans-comparison"></div>
+<section id="plans-management" class="plans-management" hidden aria-labelledby="plans-manage-title"><h3 id="plans-manage-title" tabindex="-1">Gerenciar assinatura</h3><p id="plans-renewal-status"></p><button type="button" class="btn btn-outline" id="plans-renewal-toggle" onclick="SideQuestPlanUI.toggleRenewal()">Cancelar renovação automática</button><p class="plans-demo">Cancelar a renovação mantém os benefícios até 15/11/2026. Nenhuma cobrança real é efetuada.</p><form id="plans-contact-form"><label class="form-control"><span class="label">Telefone público para WhatsApp / ligação</span><input id="plans-public-phone" type="tel" inputmode="tel" class="input input-bordered w-full" placeholder="DDD + número" maxlength="24" aria-describedby="plans-contact-hint plans-error"/></label><p id="plans-contact-hint" class="plans-demo">Opcional. Só informe um contato que deseja tornar público. O Ouro ativa os botões de contato nos seus cards.</p><button type="submit" class="btn btn-outline">Salvar contato público</button></form><form id="plans-description-form"><label class="form-control"><span class="label">Descrição personalizada do perfil</span><textarea id="plans-description" class="textarea textarea-bordered w-full" maxlength="500" rows="4" placeholder="Conte sobre seu trabalho (até 500 caracteres)"></textarea></label><button type="submit" class="btn btn-outline">Salvar descrição</button></form></section>
+<p id="plans-error" class="request-error" role="alert" hidden></p><p id="plans-feedback" class="plans-demo" role="status"></p>
+<section class="plans-benefits"><h3>Por que assinar o Pro?</h3><div><p><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>3x mais orçamentos fechados*<small>Mais visibilidade para gerar oportunidades.</small></span></p><p><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>Métricas de perfil<small>Veja quantas pessoas visitaram seu perfil.</small></span></p><p><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>Sem comissão por serviço<small>100% do valor fica com você.</small></span></p></div><p class="plans-demo">*Potencial ilustrativo de divulgação, sem medição de resultado ou garantia de contratação.</p></section><section class="plans-analytics" id="plans-analytics"><h3>Métricas do perfil · exemplo</h3><p>124 visitas ao perfil · 18 contatos neste mês</p><p class="plans-demo">Dados ilustrativos, sem rastreamento de visitantes reais.</p></section></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar planos"></button></form></dialog>
+<dialog id="modal-plan-change" class="modal modal-bottom sm:modal-middle" aria-labelledby="plan-change-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100"><div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><header class="provider-panel-header"><h2 id="plan-change-title">Revisar mudança de plano</h2><button type="button" class="btn btn-ghost btn-circle" aria-label="Cancelar mudança de plano" onclick="this.closest('dialog').close()">✕</button></header><div id="plan-change-summary"></div><p class="plans-demo">A mudança é aplicada agora apenas à demonstração. Fotos existentes são preservadas. Não há cobrança, pagamento ou estorno real.</p><p id="plan-change-error" class="request-error" role="alert" hidden></p><div class="provider-panel-actions mt-4"><button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">Voltar</button><button type="button" class="btn btn-primary" id="plan-change-confirm" onclick="SideQuestPlanUI.confirm()">Confirmar mudança (demonstração)</button></div></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Cancelar mudança de plano"></button></form></dialog>
+<dialog id="modal-finance-goal" class="modal modal-bottom sm:modal-middle" aria-labelledby="finance-goal-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100"><div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><header class="provider-panel-header"><h2 id="finance-goal-title">Sua meta mensal</h2><button type="button" class="btn btn-ghost btn-circle" aria-label="Fechar meta" onclick="this.closest('dialog').close()">✕</button></header><form id="finance-goal-form" class="finance-modal-form" novalidate><label class="form-control"><span class="label">Meta de valor dos serviços (R$)</span><input type="number" inputmode="decimal" class="input input-bordered w-full rounded-2xl" id="finance-goal-input" min="1" max="1000000" step="0.01" required aria-describedby="finance-goal-error"/></label><p class="request-error" id="finance-goal-error" role="alert" hidden></p><div class="provider-panel-actions"><button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar meta</button></div></form></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar meta"></button></form></dialog>
+<dialog id="modal-finance-report" class="modal modal-bottom sm:modal-middle" aria-labelledby="finance-report-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100"><div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><header class="provider-panel-header"><h2 id="finance-report-title">Relatório do mês</h2><button type="button" class="btn btn-ghost btn-circle" aria-label="Fechar relatório" onclick="this.closest('dialog').close()">✕</button></header><p class="finance-muted mt-4">Inclui os serviços do mês, valores combinados e status de execução. Não é comprovante de pagamento. O filtro da lista não limita o relatório.</p><p class="finance-muted mt-3">O CSV abre em planilhas. Para PDF, escolha “Salvar como PDF” na janela de impressão do navegador. Relatório demonstrativo para controle pessoal.</p><div class="provider-panel-actions mt-4"><button type="button" class="btn btn-outline" id="finance-export-pdf" onclick="SideQuestFinance.printReport()">Imprimir / salvar PDF</button><button type="button" class="btn btn-primary" id="finance-export-csv" onclick="SideQuestFinance.downloadCSV()">Baixar CSV</button></div></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar relatório"></button></form></dialog>
+<dialog class="modal modal-bottom sm:modal-middle" id="modal-client-details" aria-labelledby="client-details-title">
+  <div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100">
+    <div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div>
+    <header class="provider-panel-header"><h2 id="client-details-title">Detalhes da cliente</h2><button type="button" class="btn btn-ghost btn-circle" aria-label="Fechar detalhes da cliente" onclick="this.closest('dialog').close()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+    <div class="provider-client-details"><span class="provider-client-avatar provider-client-photo"><img id="client-details-image" alt="" width="80" height="80"/><span id="client-details-initials" hidden aria-hidden="true"></span></span><h3 id="client-details-name"></h3><p id="client-details-location"></p><span class="provider-chat-online">● Online agora</span></div>
+    <dl class="provider-client-request"><dt>Solicitação</dt><dd id="client-details-request"></dd><dt>Orçamento</dt><dd id="client-details-proposal"></dd></dl>
+    <p class="text-xs text-base-content/60 mt-4">Perfil de demonstração. A presença online é ilustrativa; mensagens comuns ficam apenas nesta sessão.</p>
+    <div class="provider-panel-actions mt-4"><button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">Voltar à conversa</button><button type="button" class="btn btn-primary" id="client-details-budget" onclick="document.getElementById('modal-client-details').close();openSendBudgetModal(clients[currentClient].name)">Preparar proposta</button></div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar detalhes da cliente"></button></form>
+</dialog>
+<dialog class="modal modal-bottom sm:modal-middle" id="modal-provider-radius" aria-labelledby="provider-radius-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100 provider-settings-panel">
+<div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><form id="provider-radius-form" novalidate>
+<header class="provider-panel-header"><h2 id="provider-radius-title"><i class="fa-solid fa-compass text-primary" aria-hidden="true"></i> Raio de atendimento</h2><button class="btn btn-ghost btn-square" type="button" aria-label="Fechar raio de atendimento" onclick="this.closest('dialog').close()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+<p class="text-sm text-base-content/60">Defina a cidade e a distância máxima para os chamados que deseja ver.</p>
+<label class="form-control"><span class="label">Cidade base</span><input class="input input-bordered w-full rounded-2xl" id="provider-base-city" maxlength="80" autocomplete="address-level2" required value="Santos" aria-describedby="provider-radius-error"/></label>
+<label class="form-control"><span class="label provider-radius-heading"><span>Distância máxima</span><output class="badge badge-primary" id="provider-radius-output" for="provider-radius-range">10 km</output></span><input class="range range-primary w-full" id="provider-radius-range" type="range" min="1" max="50" step="1" value="10" aria-label="Raio em quilômetros"/><span class="provider-range-labels"><span>1 km</span><span id="provider-radius-max-label">50 km</span></span></label><p id="provider-radius-plan-hint" class="text-xs text-base-content/60">Seu Pro Ouro permite até 50 km.</p>
+<p class="request-error" id="provider-radius-error" role="alert" hidden></p><div class="provider-panel-actions"><button class="btn btn-ghost rounded-2xl w-full sm:w-auto" type="button" onclick="this.closest('dialog').close()">Cancelar</button><button class="btn btn-primary rounded-2xl w-full sm:w-auto" type="submit">Salvar raio</button></div>
+</form></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar raio de atendimento"></button></form></dialog>
+<dialog class="modal modal-bottom sm:modal-middle" id="modal-provider-services" aria-labelledby="provider-services-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100 provider-settings-panel">
+<div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><form id="provider-services-form" novalidate>
+<header class="provider-panel-header"><h2 id="provider-services-title">Meus serviços e categorias</h2><button type="button" class="btn btn-ghost btn-square" aria-label="Fechar serviços" onclick="this.closest('dialog').close()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+<p class="text-sm text-base-content/60">Escolha os serviços que você oferece. As alterações ficam nesta sessão.</p><fieldset id="provider-service-options"><legend class="sr-only">Categorias atendidas</legend></fieldset><p class="request-error" id="provider-services-error" role="alert" hidden></p><div class="provider-panel-actions"><button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar categorias</button></div>
+</form></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar serviços"></button></form></dialog>
+<dialog class="modal modal-bottom sm:modal-middle" id="modal-provider-settings" aria-labelledby="provider-settings-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100 provider-settings-panel">
+<div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><form id="provider-settings-form">
+<header class="provider-panel-header"><h2 id="provider-settings-title">Configurações</h2><button type="button" class="btn btn-ghost btn-square" aria-label="Fechar configurações" onclick="this.closest('dialog').close()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+<label class="provider-settings-row"><span><span class="block font-semibold">Reduzir movimento</span><span class="block text-sm text-base-content/60">Desativar animações e transições.</span></span><input type="checkbox" class="toggle toggle-primary" id="provider-reduced-motion"/></label>
+<p class="text-sm text-base-content/60">Preferência aplicada nesta sessão.</p><div class="provider-panel-actions"><button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar configurações</button></div>
+</form></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar configurações"></button></form></dialog>
+
+<!-- SEND BUDGET MODAL (PROVIDER) -->
+<dialog aria-labelledby="modal-budget-title" class="modal modal-bottom sm:modal-middle" id="modal-budget">
+<div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100 budget-panel">
+<div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div>
+<form id="budget-form" novalidate onsubmit="event.preventDefault();confirmSendBudget()">
+<header class="budget-header"><h2 id="modal-budget-title">Preparar Proposta</h2><button type="button" aria-label="Fechar e guardar rascunho" class="btn btn-ghost btn-square" onclick="closeBudgetModal()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
+<p class="badge badge-soft badge-primary budget-request-summary">Para: <strong id="budget-client-name">Mariana Silva</strong><span aria-hidden="true">•</span><span id="budget-request-title">Instalação de Chuveiro 7500W e Reparo de Tomadas</span></p>
+<div><label class="label budget-label" for="budget-value">Valor Total do Serviço (R$)</label><label class="input input-bordered w-full budget-price-field"><span class="budget-currency" aria-hidden="true">R$</span><input id="budget-value" min="1" max="100000" step="0.01" type="number" inputmode="decimal" aria-describedby="budget-value-error" required placeholder="0,00"/></label><p id="budget-value-error" class="auth-error" hidden></p></div>
+<fieldset class="budget-schedule"><legend class="budget-label">Previsão e Data de Atendimento</legend><label class="form-control"><span class="label" for="budget-schedule">Data e horário sugeridos</span><input class="input input-bordered w-full" id="budget-schedule" maxlength="120" required placeholder="Ex.: Amanhã às 10h" aria-describedby="budget-schedule-error"/><span id="budget-schedule-error" class="auth-error" hidden></span></label><label class="form-control"><span class="label" for="budget-duration">Duração estimada</span><span class="input input-bordered budget-duration-field"><i class="fa-regular fa-clock" aria-hidden="true"></i><input id="budget-duration" list="budget-duration-options" maxlength="80" required placeholder="1 a 2 horas" aria-describedby="budget-duration-error"/></span><span id="budget-duration-error" class="auth-error" hidden></span></label><datalist id="budget-duration-options"><option value="Até 1 hora"></option><option value="1 a 2 horas"></option><option value="2 a 4 horas"></option><option value="Meio período"></option><option value="1 dia"></option><option value="2 dias"></option></datalist></fieldset>
+<div><label class="label budget-label" for="budget-notes">Escopo &amp; O que está incluído</label><textarea class="textarea textarea-bordered w-full" id="budget-notes" maxlength="1000" required rows="4" aria-describedby="budget-scope-hint budget-notes-error" placeholder="Ex: Mão de obra para troca do chuveiro, testes na fiação e vedação. Não inclui peças adicionais."></textarea><p id="budget-scope-hint" class="budget-hint">Uma linha por item. Inclua materiais e informe o que não está incluído. Até 1.000 caracteres.</p><p id="budget-notes-error" class="auth-error" hidden></p></div>
+<p id="budget-error" role="alert" class="request-error" hidden></p>
+<p class="direct-payment-note">O SideQuest não cobra taxa sobre seus serviços. Todo o pagamento é negociado e recebido diretamente por você com o cliente.</p><div class="budget-submit-area"><button type="submit" id="budget-submit" class="btn btn-primary w-full rounded-2xl shadow-md"><span id="budget-submit-label">Enviar Proposta no Chat</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button><button type="button" class="btn btn-ghost budget-save-draft" onclick="closeBudgetModal()">Guardar rascunho e fechar</button></div>
+</form></div>
+<form class="modal-backdrop" method="dialog"><button aria-label="Fechar e guardar rascunho" class="opacity-0"></button></form>
+</dialog>
+<dialog aria-labelledby="portfolio-upload-title" class="modal modal-bottom sm:modal-middle" id="modal-crop"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100"><div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div>
+<header class="provider-panel-header"><h2 id="portfolio-upload-title">Adicionar Trabalho ao Portfólio</h2><button type="button" class="btn btn-ghost btn-circle" aria-label="Cancelar publicação da foto" onclick="this.closest('dialog').close()">✕</button></header>
+<form id="portfolio-form" class="portfolio-upload-form" novalidate onsubmit="event.preventDefault();confirmPortfolioUpload()">
+<p id="portfolio-hint" class="provider-profile-hint">JPG, PNG ou WebP de até 10 MB. <span id="portfolio-plan-limit">Fotos ilimitadas no Pro Ouro.</span></p>
+<input class="sr-only" tabindex="-1" id="portfolio-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Foto do serviço" aria-describedby="portfolio-hint portfolio-error"/>
+<button type="button" id="portfolio-dropzone" class="portfolio-dropzone border-dashed border-2 border-primary/30 p-6 text-center rounded-2xl" onclick="document.getElementById('portfolio-file').click()" aria-describedby="portfolio-hint portfolio-error"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Toque para selecionar ou tirar foto do serviço</span><small>Ou arraste uma foto para cá</small></button>
+<p id="portfolio-filename" class="provider-profile-hint" hidden></p>
+<img id="portfolio-preview" alt="Prévia da foto selecionada" class="w-full rounded-xl" hidden/>
+<label class="form-control"><span class="label">Título / Descrição do trabalho <span class="provider-profile-hint">(obrigatório)</span></span><input id="portfolio-title" class="input input-bordered rounded-2xl w-full" type="text" maxlength="120" placeholder="Ex.: Troca de disjuntor geral" required aria-describedby="portfolio-title-hint portfolio-title-error"/></label><p id="portfolio-title-hint" class="provider-profile-hint">Dê um nome ao serviço. Até 120 caracteres.</p><p id="portfolio-title-error" role="alert" class="request-error" hidden></p>
+<p id="portfolio-error" role="alert" hidden></p><p id="portfolio-status" role="status" class="provider-profile-hint"></p>
+<div class="provider-panel-actions"><button class="btn btn-ghost rounded-2xl" type="button" onclick="this.closest('dialog').close()">Cancelar</button><button class="btn btn-primary rounded-2xl w-full" type="submit" id="portfolio-confirm" disabled>Publicar no Portfólio</button></div>
+</form></div><form class="modal-backdrop" method="dialog"><button aria-label="Cancelar publicação da foto" class="opacity-0"></button></form></dialog>
+<dialog id="modal-portfolio-work" class="modal modal-bottom sm:modal-middle" aria-labelledby="portfolio-work-title"><div class="modal-box p-5 w-full max-w-lg rounded-t-3xl rounded-b-none sm:rounded-3xl border border-base-200 shadow-2xl bg-base-100"><div class="provider-sheet-handle w-12 h-1 bg-base-300 rounded-full mx-auto mb-3 sm:hidden" aria-hidden="true"></div><header class="provider-panel-header"><h2 id="portfolio-work-title">Trabalho no portfólio</h2><button type="button" class="btn btn-ghost btn-circle" aria-label="Fechar foto do trabalho" onclick="this.closest('dialog').close()">✕</button></header><img id="portfolio-work-image" alt=""/><div class="provider-panel-actions"><button class="btn btn-ghost" type="button" onclick="this.closest('dialog').close()">Voltar ao perfil</button></div></div><form method="dialog" class="modal-backdrop"><button class="opacity-0" aria-label="Fechar foto do trabalho"></button></form></dialog>
+<!-- ========================================== -->
+<!-- JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+<!-- ========================================== -->
+<script src="assets/motion.js"></script>
+<script src="assets/proposals.js"></script>
+<script src="assets/plans.js"></script>
+<script src="assets/sidequest.js"></script>
+<script src="assets/provider-home.js"></script>
+<script src="assets/provider-finance.js"></script>
+<script src="assets/provider-plans.js"></script>
+<section id="finance-print-report" aria-label="Relatório financeiro para impressão"></section>
+<div aria-live="polite" class="toast toast-top toast-center z-50" hidden="" id="app-feedback" role="status"></div>
+</body>
+</html>
